@@ -22,6 +22,6 @@ test('Guess the right command', function(t){
   t.equal(cli.getCommand('status', availableCommands), 'status', '"status" returned status');
   t.equal(cli.getCommand('st', availableCommands), 'status', '"st" returned status');
   t.equal(cli.getCommand('isntall', availableCommands), 'install', '"isntall" returned install');
-  t.similar(cli.getCommand('in', availableCommands), {message:'There are 2 potential options for "in": install,info'});
+  t.similar(cli.getCommand('in', availableCommands), {message:'There are 2 options for "in": install, info'});
   t.similar(cli.getCommand('delete', availableCommands), {message:'There are no commands by the name of "delete"'});
 });

@@ -175,7 +175,8 @@ Helmsman.prototype.getCommand = function(cmd, availableCommands) {
     if (list.length === 1) {
       return list[0];
     } else if (list.length > 1) {
-      return new Error(util.format('There are %d potential options for "%s": %s', list.length, cmd, list));
+      return new Error(util.format('There are %d options for "%s": %s',
+        list.length, cmd, list.join(', ')));
     } else {
       return false;
     }
