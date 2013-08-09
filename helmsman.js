@@ -106,7 +106,9 @@ function Helmsman(options) {
 
     self.availableCommands[name] = commandData;
 
-    var fullCommand = (commandData.options) ? name + ' ' + commandData.command : name;
+    var fullCommand = commandData.arguments ?
+      name + ' ' + commandData.arguments :
+      name;
 
     // Figure out the longest command name for printing --help
     if (fullCommand.length > self.commandMaxLength) {
@@ -229,13 +231,13 @@ Helmsman.prototype.parse = function(argv) {
     return self.showHelp();
   }
 
+  var cmd = self.getCommand(args.shift());
+
   if ('object' === typeof cmd && cmd.name === "Error") {
     util.error(cmd.message.red);
     self.showHelp();
     process.exit(1);
   }
-
-  var cmd = self.getCommand(args.shift());
 
   // Implicit help
   // If <command> help <sub-command> is entered, automatically run <command>-<sub-command> --help
