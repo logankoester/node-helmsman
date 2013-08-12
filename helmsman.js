@@ -116,7 +116,8 @@ function Helmsman(options) {
     }
   });
 
-  self.availableCommands['help'] = { // help is always available!
+  // help is always available!
+  self.availableCommands['help'] = {
     arguments: '<sub-command>',
     description: 'Show the --help for a specific command'
   };
@@ -186,16 +187,25 @@ Helmsman.prototype.getCommand = function(cmd, availableCommands) {
   var shortHandCmd = isOneOrMore(availableCommands, function(command) {
     return (command.indexOf(cmd) === 0);
   });
-  if (shortHandCmd) { return shortHandCmd; }
+
+  if (shortHandCmd) {
+    return shortHandCmd;
+  }
 
   // If there is a close match, return it
   var similarCmd = isOneOrMore(availableCommands, function(command) {
     return (_s.levenshtein(cmd, command) <= 2);
   });
-  if (similarCmd) { return similarCmd; }
+
+  if (similarCmd) {
+    console.log('You typed', cmd, 'which matched', similarCmd);
+
+    return similarCmd;
+  }
 
   // If nothing, then get outta here
-  return new Error(util.format('There are no commands by the name of "%s"', cmd));
+  return new Error(util.format('There are no commands by the name of "%s"',
+    cmd));
 };
 
 /**
@@ -217,7 +227,8 @@ Helmsman.prototype.parse = function(argv) {
   // Print the modules version number
   if (args[0] === '--version') {
     // BOLD assumption that the file is in ./bin
-    var packagePath = path.join(path.dirname(require.main.filename), '..', 'package.json');
+    var packagePath = path.join(path.dirname(require.main.filename), '..',
+      'package.json');
     var pkg = require(packagePath);
     return console.log(pkg.name + ": " + pkg.version);
   }
