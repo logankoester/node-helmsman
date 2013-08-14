@@ -8,9 +8,10 @@ var events = require("events");
 var path = require('path');
 var glob = require('glob');
 var spawn = require('child_process').spawn;
-var _s = require('underscore.string');
-var domain = require('domain').create();
 var _ = require('lodash');
+var _s = require('underscore.string');
+
+var domain = require('domain').create();
 
 require('colors');
 
@@ -245,7 +246,7 @@ Helmsman.prototype.parse = function(argv) {
 
   var cmd = self.getCommand(args.shift());
 
-  if ('object' === typeof cmd && cmd.name === "Error") {
+  if (util.isError(cmd)) {
     util.error(cmd.message.red);
     self.showHelp();
     process.exit(1);
