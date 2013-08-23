@@ -8,6 +8,7 @@ var events = require("events");
 var path = require('path');
 var glob = require('glob');
 var spawn = require('child_process').spawn;
+var _ = require('lodash');
 var _s = require('underscore.string');
 
 var domain = require('domain').create();
@@ -37,6 +38,10 @@ function Helmsman(options){
   events.EventEmitter.call(self);
 
   if (!options) { options = {}; }
+
+  if (options.usePath) {
+    this.usePath = true;
+  }
 
   if (!options.localDir) {
     this.localDir = path.dirname(module.parent.filename);
@@ -68,15 +73,37 @@ function Helmsman(options){
       return path.join(self.localDir, file);
     });
 
+  if (this.usePath) {
+    var pathTokens = process.env.PATH.split(':');
+
+    pathTokens.forEach(function (pathToken) {
+      self.localFiles = self.localFiles.concat(glob.sync(self.prefix + '*',
+        { cwd: pathToken }).map(function (file) {
+          return path.join(pathToken, file);
+        }));
+    });
+  }
+
   this.localFiles.forEach(function(file) {
     var extension = path.extname(file);
     var name = path.basename(file, extension).substr(self.prefix.length);
 
-    var commandData = require(file).command;
+    var commandData = {
+      description: ''
+    };
 
-    if (!commandData) {
-      util.error('The file ('+file+') did not export.command. Please ensure your commands are setup properly and your prefix is correct'.red);
-      process.exit(1);
+    // Only try to get metadata from commands written in JavaScript
+    if (extension === '' || extension === '.js') {
+      try {
+        commandData = _.merge(commandData, require(file).command);
+      } catch (e) {
+        // If it is JavaScript and we fail to require it's an error
+        if (extension === '.js') {
+          util.error(util.format('The file "%s" did not load correctly: %s',
+            file, e).red);
+          process.exit(1);
+        }
+      }
     }
 
     commandData.path = file;
@@ -221,7 +248,8 @@ Helmsman.prototype.parse = function(argv){
   }
 
   // Implicit help
-  // If <command> help <sub-command> is entered, automatically run <command>-<sub-command> --help
+  // If <command> help <sub-command> is entered, automatically run
+  // <command>-<sub-command> --help
   if (cmd === 'help') {
     cmd = args.shift();
     args = ['--help'];
